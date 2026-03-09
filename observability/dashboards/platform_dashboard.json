@@ -1,0 +1,25 @@
+{
+  "name": "Platform Observability Dashboard",
+  "widgets": [
+    {
+      "title": "Cluster CPU Utilization",
+      "query": "SELECT average(cpuPercent) FROM K8sNodeSample TIMESERIES"
+    },
+    {
+      "title": "Cluster Memory Usage",
+      "query": "SELECT average(memoryUsedBytes/memoryTotalBytes*100) FROM K8sNodeSample TIMESERIES"
+    },
+    {
+      "title": "Pod Restart Rate",
+      "query": "SELECT sum(restartCount) FROM K8sPodSample TIMESERIES"
+    },
+    {
+      "title": "Application Latency p95",
+      "query": "SELECT percentile(duration,95) FROM Transaction TIMESERIES"
+    },
+    {
+      "title": "Error Rate",
+      "query": "SELECT percentage(count(*), WHERE error IS true) FROM Transaction TIMESERIES"
+    }
+  ]
+}
