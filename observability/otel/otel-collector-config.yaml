@@ -1,8 +1,15 @@
 receivers:
+
   otlp:
     protocols:
       grpc:
       http:
+
+  kubeletstats:
+    collection_interval: 20s
+    auth_type: serviceAccount
+    endpoint: ${K8S_NODE_NAME}:10250
+    insecure_skip_verify: true
 
   prometheus:
     config:
@@ -12,25 +19,39 @@ receivers:
             - role: pod
 
 processors:
+
   batch:
+    timeout: 10s
+
+  memory_limiter:
+    limit_percentage: 75
+    spike_limit_percentage: 15
+
+  resource:
+    attributes:
+      - key: platform
+        value: multi-tenant-eks
+        action: insert
 
 exporters:
+
   otlp:
     endpoint: otlp.nr-data.net:4317
     headers:
       api-key: ${NEW_RELIC_LICENSE_KEY}
 
 service:
+
   pipelines:
 
     metrics:
-      receivers: [otlp, prometheus]
-      processors: [batch]
+      receivers: [otlp, prometheus, kubeletstats]
+      processors: [memory_limiter, batch, resource]
       exporters: [otlp]
 
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [memory_limiter, batch]
       exporters: [otlp]
 
     logs:
